@@ -1,0 +1,488 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>دورة خدمة ضيوف الرحمن</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Readex+Pro:wght@500;600;700&display=swap">
+<style>
+*{box-sizing:border-box}
+body{margin:0}
+[hidden]{display:none!important}
+img,video{max-width:100%}
+/* Layout: one-screen course player, RTL; stage (video) on top, captions + controls beneath */
+:root{
+  --bg:#eef1ef; --surface:#ffffff; --ink:#14231f; --muted:#5b6b66;
+  --line:#d5ddd9; --accent:#0d6b52; --accent-ink:#ffffff; --gold:#b8862b;
+  --stage:#0f1f1b; --stage-ink:#e8efec;
+  --ok:#1e7a4c; --ok-bg:#e3f2ea; --bad:#b4372f; --bad-bg:#f8e6e4; --warn-bg:#f7efdf;
+  --f-display:"Readex Pro","IBM Plex Sans Arabic",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans Arabic",system-ui,"Segoe UI",Tahoma,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0c1513; --surface:#13201d; --ink:#e4ece9; --muted:#93a59f;
+  --line:#25362f; --accent:#3fb38f; --accent-ink:#06120e; --gold:#d6a74e;
+  --stage:#050b09; --stage-ink:#e8efec; --ok:#4cc38a; --ok-bg:#12271d; --bad:#e8786e; --bad-bg:#2b1513; --warn-bg:#2a2210; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0c1513; --surface:#13201d; --ink:#e4ece9; --muted:#93a59f;
+  --line:#25362f; --accent:#3fb38f; --accent-ink:#06120e; --gold:#d6a74e;
+  --stage:#050b09; --stage-ink:#e8efec; --ok:#4cc38a; --ok-bg:#12271d; --bad:#e8786e; --bad-bg:#2b1513; --warn-bg:#2a2210; color-scheme:dark}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.7;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:860px;margin:0 auto;padding-block:20px 32px;display:flex;flex-direction:column;gap:16px}
+h1,h2{font-family:var(--f-display);text-wrap:balance;margin:0;line-height:1.35}
+h1{font-size:clamp(1.5rem,4vw,2.1rem)} h2{font-size:1.25rem}
+p{margin:0}
+button,label.btn{font:inherit;cursor:pointer}
+button:focus-visible,label.btn:focus-within{outline:3px solid var(--gold);outline-offset:2px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border-radius:10px;
+  padding:10px 18px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-weight:500}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.pulse{animation:pulse 1.4s ease-in-out infinite}
+@keyframes pulse{50%{box-shadow:0 0 0 6px color-mix(in srgb,var(--accent) 25%,transparent)}}
+@media (prefers-reduced-motion:reduce){.btn.pulse{animation:none}}
+.eyebrow{font-size:.8rem;letter-spacing:.04em;color:var(--gold);font-weight:600}
+.muted{color:var(--muted)}
+
+/* welcome */
+.welcome{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:28px 24px;display:flex;flex-direction:column;gap:18px}
+.welcome .lead{font-size:1.1rem;max-width:58ch}
+.disclose{display:flex;gap:12px;align-items:flex-start;border-inline-start:3px solid var(--gold);padding-inline-start:12px;font-size:.92rem;color:var(--muted);max-width:62ch}
+.meta{display:flex;flex-wrap:wrap;gap:8px 20px;font-size:.9rem;color:var(--muted)}
+.meta b{color:var(--ink);font-weight:600}
+.actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+
+/* player */
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.progress{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.progress span{height:6px;border-radius:3px;background:var(--line)}
+.progress span.done{background:var(--accent)}
+.progress span.now{background:var(--gold)}
+.stage{position:relative;aspect-ratio:16/9;max-width:100%;background:var(--stage);border-radius:14px;overflow:hidden;color:var(--stage-ink)}
+.stage video{width:100%;height:100%;object-fit:contain;display:block;background:#000}
+.ph{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:20px;text-align:center}
+.ph svg{width:72px;height:72px;opacity:.55}
+.ph small{opacity:.7;font-size:.82rem}
+.cap{position:absolute;inset-inline:0;bottom:0;padding:14px 16px 16px;background:linear-gradient(transparent,rgba(0,0,0,.78));
+  font-size:clamp(.95rem,2.4vw,1.15rem);line-height:1.6;text-align:center;color:#fff;text-wrap:balance}
+.cap[dir="ltr"]{font-family:system-ui,sans-serif}
+.controls{display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--surface)}
+.seg button{border:0;background:transparent;color:var(--ink);padding:8px 12px;font-size:.88rem}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.nav{display:flex;gap:10px}
+.brk{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:20px;text-align:center;background:color-mix(in srgb,var(--stage) 88%,transparent)}
+.brkTitle{font-family:var(--f-display);font-size:clamp(1.1rem,3vw,1.5rem)}
+.quiz{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:22px 20px;display:flex;flex-direction:column;gap:14px}
+.quiz .q{font-family:var(--f-display);font-size:clamp(1.05rem,2.6vw,1.3rem);line-height:1.6}
+.opts{display:flex;flex-direction:column;gap:10px}
+.opt{display:flex;gap:12px;align-items:flex-start;text-align:start;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:12px;padding:12px 14px;font:inherit;cursor:pointer}
+.opt b{font-family:var(--f-display);color:var(--accent);min-width:1.4em}
+.opt:hover:not(:disabled){border-color:var(--accent)}
+.opt:disabled{cursor:default}
+.opt.ok{border-color:var(--ok);background:var(--ok-bg)}
+.opt.partial{border-color:var(--gold);background:var(--warn-bg)}
+.opt.wrong{border-color:var(--bad);background:var(--bad-bg)}
+.opt.dim{opacity:.5}
+.fb{border-radius:12px;padding:12px 14px;border-inline-start:4px solid var(--line);background:var(--bg)}
+.fb.ok{border-color:var(--ok)} .fb.partial{border-color:var(--gold)} .fb.wrong{border-color:var(--bad)}
+.fb strong{display:block;font-family:var(--f-display);margin-bottom:2px}
+.cd{width:100%;height:4px;border-radius:2px;background:var(--line);overflow:hidden}
+.cd span{display:block;height:100%;width:0;background:var(--accent);transition:width linear}
+.summary{font-size:.95rem;color:var(--muted)}
+.timebar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:8px 12px}
+.tc{font-variant-numeric:tabular-nums;font-weight:600;min-width:12ch;direction:rtl}
+.timebar input[type=range]{flex:1;min-width:140px;accent-color:var(--accent)}
+.btn.sm{padding:6px 10px;font-size:.85rem;font-variant-numeric:tabular-nums;direction:ltr}
+
+/* end */
+.end{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:28px 24px;display:flex;flex-direction:column;gap:16px}
+.rate{display:flex;flex-wrap:wrap;gap:8px}
+.rate button{width:48px;height:48px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font-weight:600}
+.rate button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.note{font-size:.85rem;color:var(--muted)}
+
+/* end survey */
+.survey,.thanks{display:flex;flex-direction:column;gap:12px}
+.survey h3,.thanks h3{font-family:var(--f-display);font-size:1.1rem;margin:0}
+.scale-key{font-size:.85rem}
+.items{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px;counter-reset:it}
+.items li{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--bg);counter-increment:it}
+.items li p{flex:1 1 260px;min-width:0}
+.items li p::before{content:counter(it) ". ";font-weight:600;color:var(--accent)}
+.items .rate button{width:40px;height:40px}
+.open{font-weight:600}
+textarea{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px;resize:vertical;width:100%}
+textarea:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+/* researcher panel */
+details.rp{border:1px dashed var(--line);border-radius:12px;padding:10px 14px;font-size:.88rem;color:var(--muted)}
+details.rp summary{cursor:pointer;font-weight:600;color:var(--ink)}
+details.rp ol{margin:8px 0 0;padding-inline-start:20px;display:flex;flex-direction:column;gap:4px}
+details.rp .ok{color:var(--accent);font-weight:600}
+.timebar{display:none!important}
+</style>
+</head>
+<body>
+
+<div class="wrap" dir="rtl" lang="ar">
+
+  <!-- WELCOME -->
+  <section id="welcome" class="welcome">
+    <div class="eyebrow">دورة تدريبية مقدّمة لمنسوبي وزارة الحج والعمرة</div>
+    <h1>مرحبًا بكم في دورة التعامل الصحيح مع حجاج بيت الله الحرام</h1>
+    <p class="lead">ستستمعون الآن إلى دورة تعليمية قصيرة عن طريقة التعامل الصحيح مع ضيوف الرحمن. تقدّم هذه الدورة الأخت <b>سارة</b>.</p>
+    <div class="meta">
+      <span><b>مقدمة + 5 محاور</b> · حوالي 6 دقائق</span>
+    </div>
+    <div class="disclose">
+      <span>ℹ</span>
+      <p>المقدّمة في هذه الدورة شخصية رقمية مُولَّدة بالذكاء الاصطناعي، وليست شخصًا حقيقيًا. لا تُحفظ أي بيانات عنك.</p>
+    </div>
+    <div class="actions">
+      <span class="muted">جاهزين نبدأ؟</span>
+      <button class="btn primary" id="startBtn">يلا نبدأ</button>
+    </div>
+  </section>
+
+  <!-- PLAYER -->
+  <section id="player" hidden>
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div class="top">
+        <h2 id="topicTitle">مقدمة الدورة</h2>
+        <span class="muted" id="counter">1 / 6</span>
+      </div>
+      <div class="progress" id="progress" aria-hidden="true"></div>
+      <div id="viewer" style="display:flex;flex-direction:column;gap:14px">
+      <div class="stage" id="stage">
+        <video id="vid" playsinline hidden></video>
+        <div class="ph" id="ph">
+          <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2"><circle cx="32" cy="22" r="11"/><path d="M12 58c2-12 10-19 20-19s18 7 20 19"/></svg>
+          <div id="phTitle">المقطع 1</div>
+          <small>مكان مؤقت حتى إضافة مقطع الفيديو</small>
+        </div>
+        <div class="cap" id="cap"></div>
+        <div class="brk" id="brk" hidden>
+          <div class="eyebrow" id="brkDone">انتهت المقدمة</div>
+          <div class="brkTitle" id="brkNext">التالي: المحور الثاني</div>
+          <div class="cd" style="max-width:240px"><span id="brkBar"></span></div>
+        </div>
+      </div>
+      <div class="timebar">
+        <span class="tc" id="tc">المقدمة · 0.0 / 0.0 ث</span>
+        <input type="range" id="seek" min="0" max="8" step="0.05" value="0" aria-label="موضع المقطع">
+        <button class="btn sm" id="stepBack" title="رجوع ربع ثانية">−0.25</button>
+        <button class="btn sm" id="stepFwd" title="تقديم ربع ثانية">+0.25</button>
+      </div>
+      <div class="controls">
+        <div class="seg" role="group" aria-label="الترجمة">
+          <button data-cap="ar" aria-pressed="true">عربي</button>
+          <button data-cap="en" aria-pressed="false">English</button>
+          <button data-cap="off" aria-pressed="false">بدون</button>
+        </div>
+        <div class="nav">
+          <button class="btn" id="backBtn">→ السابق</button>
+          <button class="btn" id="replayBtn">↻ من البداية</button>
+          <button class="btn primary" id="pauseBtn">❚❚ إيقاف</button>
+        </div>
+      </div>
+      </div>
+      <div class="quiz" id="quiz" hidden>
+        <div class="eyebrow" id="qEyebrow">موقف تفاعلي</div>
+        <p class="q" id="qText"></p>
+        <div class="opts" id="qOpts" role="group" aria-label="الخيارات"></div>
+        <div class="fb" id="qFb" hidden role="status"></div>
+        <div class="actions" id="qActions"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- END -->
+  <section id="end" class="end" hidden>
+    <div class="eyebrow">نهاية الدورة</div>
+    <h2>أحسنت! أنهيت محاور الدورة</h2>
+    <p>تذكّر: الحاج ضيف قادم من بعيد، وقد يكون متعبًا أو قلقًا أو لا يتحدث العربية. ابدأ دائمًا بطمأنته واحتوائه بصبر.</p>
+    <div id="survey" class="survey">
+      <h3>رأيك في سهولة استخدام الدورة</h3>
+      <p class="muted scale-key">1 = لا أوافق إطلاقًا · 5 = أوافق تمامًا</p>
+      <ol class="items" id="items"></ol>
+      <label class="open" for="openQ">هل لديك أي ملاحظة أو اقتراح لتحسين الدورة؟ (اختياري)</label>
+      <textarea id="openQ" rows="3"></textarea>
+      <div class="actions"><button class="btn primary" id="sendBtn" disabled>إرسال</button><span class="muted" id="sendHint">أجب عن الأسئلة الخمسة</span></div>
+    </div>
+    <div class="thanks" id="thanks" hidden>
+      <h3>شكرًا لك على مشاركة رأيك</h3>
+    </div>
+    <p class="note">هذه الأسئلة للعرض فقط في النموذج الأولي، ولا تُحفظ إجاباتك.</p>
+    <div class="actions">
+      <button class="btn" id="restartBtn">ابدأ من جديد</button>
+    </div>
+  </section>
+
+</div>
+
+<script>
+// One continuous video per topic. segs = caption segments by start second.
+const TOPICS = [
+  { title: "مقدمة الدورة", short: "المقدمة", v: "clips/merged/intro.mp4",
+    segs: [], ready: true },
+  { title: "المحور الأول: من هو الحاج أو المعتمر؟", short: "المحور الأول", v: "clips/merged/topic1.mp4",
+    segs: [
+      {s:0,      ar:"الآن سنبدأ في المحور الأول. فكّر معي: من هو الحاج أو المعتمر؟",
+       en:"Let us begin the first topic. Think with me: who is the pilgrim?"},
+      {s:7.33,   ar:"هو ضيفٌ قطع آلاف الكيلومترات، حاملًا مشاعر روحانية عالية وتوقعات كبيرة.",
+       en:"He is a guest who has travelled thousands of kilometres, carrying deep spiritual feelings and high expectations."},
+      {s:15.33,  ar:"لذلك تذكّر أنه عند القدوم قد يكون متعبًا أو قلقًا، أو لا يتحدث اللغة العربية.",
+       en:"So remember: when he arrives, he may be tired or anxious, or may not speak Arabic."},
+      {s:22.67,  ar:"واعلم أخي الكريم أن فهم حالته النفسية هو أساس التعامل الاحترافي.",
+       en:"Know, my brother, that understanding his emotional state is the basis of professional service."},
+      {s:30,     ar:"عندما ندرك هذه الأبعاد، يصبح تواصلنا أكثر إنسانية وأكثر تأثيرًا.",
+       en:"When we understand these dimensions, our communication becomes more humane and more effective."},
+      {s:37.33,  ar:"استيعابك لحالته النفسية هو المفتاح؛ فالحاج الذي يبدو مرتبكًا ليس غاضبًا منك، بل يحتاج فقط إلى من يطمئنه ويحتويه بصبر.",
+       en:"Understanding his state is the key. A pilgrim who seems confused is not angry with you; he simply needs someone to reassure him and support him patiently."},
+      {s:45.33,  ar:"لذلك، عليك أولًا أن تطمئنه وتحتويه.",
+       en:"So your first step is to reassure him and make him feel welcome."}
+    ],
+    quiz: {
+      q: "تخيّل معي: وصل حاجٌّ كبير في السن، مرتبك ويرفع صوته، ولا يتحدث العربية. ماذا ستفعل؟",
+      opts: [
+        {k:"أ", t:"أبتسم وأطمئنه بهدوء، وأحاول فهم حاجته بالإشارة أو بمترجم.", r:"ok",
+         fb:"أحسنت! الطمأنة أولًا، ثم فهم حاجته بهدوء. هذا هو التعامل الاحترافي."},
+        {k:"ب", t:"أحوّله مباشرة إلى زميل يتحدث لغته.", r:"wrong",
+         fb:"تحويله مباشرة يتركه قلقًا. طمئنه أولًا، ثم استعن بزميلك إن احتجت."},
+        {k:"ج", t:"أطلب منه بلطف أن يخفض صوته قبل أن أساعده.", r:"wrong",
+         fb:"انتبه! الحاج ليس غاضبًا منك، بل قلق. وطلبك هذا قد يزيد توتره."}
+      ],
+      summary: "الخلاصة: الحاج المرتبك ليس غاضبًا منك. ابدأ بطمأنته واحتوائه بصبر، ثم افهم حاجته."
+    }},
+  { title: "المحور الثاني: التواصل الفعّال", short: "المحور الثاني", v: "clips/merged/topic2.mp4",
+    segs: [],
+    quiz: {
+      q: "جاءك حاج يشرح لك مشكلته ببطء، ويتوقف أحيانًا ليبحث عن الكلمات. ماذا تفعل؟",
+      opts: [
+        {k:"أ", t:"أكمل الجملة عنه بسرعة حتى أختصر عليه الوقت.", r:"wrong",
+         fb:"إكمال الجملة عنه قد يغيّر ما يريد قوله ويُشعره بالاستعجال."},
+        {k:"ب", t:"أستمع وأنا أنظر حولي وأتابع ما يجري في المكان.", r:"wrong",
+         fb:"النظر حولك يُفهم على أنه عدم اهتمام، حتى لو كنت تسمعه."},
+        {k:"ج", t:"أبتسم، وأقف مقابلًا له باهتمام، وأنصت حتى ينتهي، ثم أعيد عليه ما فهمته لأتأكد.", r:"ok",
+         fb:"أحسنت! جمعت عناصر التواصل الفعّال الثلاثة: الابتسامة، ولغة جسد مستعدة، وإنصات واعٍ."}
+      ],
+      summary: "الخلاصة: التواصل الفعّال = ابتسامة + لغة جسد مستعدة + إنصات واعٍ حتى النهاية."
+    }},
+  { title: "المحور الثالث: سلوكيات خاطئة يجب أن نتجنبها", short: "المحور الثالث", v: "clips/merged/topic3.mp4",
+    segs: [],
+    quiz: {
+      q: "أنت في موقع عملك تقرأ رسالة على جوالك، وجاءك حاج يسأل عن مكان مطعم. ماذا تفعل؟",
+      opts: [
+        {k:"أ", t:"أضع الجوال جانبًا فورًا، وأنظر إليه وأرحّب به، ثم أدلّه على المكان.", r:"ok",
+         fb:"أحسنت! ترك الجوال والنظر إلى الحاج يشعره بالاهتمام والاحترام."},
+        {k:"ب", t:"أشير له بيدي إلى الاتجاه وأنا أكمل قراءة الرسالة.", r:"wrong",
+         fb:"الإشارة دون النظر إليه تُشعره بالتجاهل، وقد لا يفهم الاتجاه."},
+        {k:"ج", t:"أقول له «لحظة» وأكمل الرسالة أولًا، ثم أرد عليه.", r:"wrong",
+         fb:"جعله ينتظر بسبب الجوال يُشعره أنه أقل أهمية من رسالتك."}
+      ],
+      summary: "الخلاصة: عندما يأتيك الحاج، اترك الجوال، وانظر إليه، ورحّب به قبل أن تجيبه."
+    }},
+  { title: "المحور الرابع: السلوك الصحيح البديل", short: "المحور الرابع", v: "clips/merged/topic4.mp4",
+    segs: [],
+    quiz: {
+      q: "سألك حاج عن مكان لا تعرف اتجاهه. ماذا تفعل؟",
+      opts: [
+        {k:"أ", t:"أقول له: «لا أعرف»، وأعود إلى عملي.", r:"wrong",
+         fb:"قول «لا أعرف» ثم السكوت يترك الحاج حائرًا دون مساعدة."},
+        {k:"ب", t:"أقول له: «دعني أتحقق لك»، ثم أسأل زميلًا أو أبحث، وأدلّه على المكان.", r:"ok",
+         fb:"أحسنت! «دعني أتحقق لك» تُشعره بالاهتمام، وتوصله إلى المعلومة الصحيحة."},
+        {k:"ج", t:"أدلّه على اتجاه تقريبي حتى لا أتركه دون إجابة.", r:"wrong",
+         fb:"الاتجاه التقريبي قد يضلّه ويتعبه. الأفضل أن تتحقق أولًا."}
+      ],
+      summary: "الخلاصة: بادر بالسلام والسؤال، وشجّع الناس في الزحام، وإذا لم تعرف فقل: «دعني أتحقق لك»."
+    }},
+  { title: "المحور الخامس والخاتمة", short: "المحور الخامس", v: "clips/merged/topic5_closing.mp4",
+    segs: [] }
+];
+const $ = id => document.getElementById(id);
+let t = 0, capMode = "ar", paused = false, seeking = false, brkTimer = null;
+const preload = document.createElement("video"); preload.preload = "auto"; preload.muted = true;
+
+function show(sec){ ["welcome","player","end"].forEach(s => $(s).hidden = s !== sec); }
+function setPauseLabel(){ $("pauseBtn").textContent = paused ? "▶ تشغيل" : "❚❚ إيقاف"; }
+
+function segAt(time){
+  const sg = TOPICS[t].segs; let k = -1;
+  for (let n = 0; n < sg.length; n++) if (time >= sg[n].s) k = n;
+  return k;
+}
+let lastSeg = -2;
+function drawCap(force){
+  const k = segAt($("vid").currentTime);
+  if (k === lastSeg && !force) return;
+  lastSeg = k;
+  const cap = $("cap"), c = TOPICS[t].segs[k];
+  const txt = c ? (capMode === "en" ? c.en : c.ar) : "";
+  cap.hidden = capMode === "off" || !txt || !$("brk").hidden;
+  cap.textContent = txt;
+  cap.dir = capMode === "en" ? "ltr" : "rtl";
+}
+function drawProgress(){
+  const n = TOPICS.length, prog = $("progress");
+  prog.style.gridTemplateColumns = `repeat(${n},1fr)`;
+  prog.innerHTML = TOPICS.map((_,k)=>`<span class="${k<t?"done":k===t?"now":""}"></span>`).join("");
+  $("counter").textContent = `${t+1} / ${n}`;
+  $("topicTitle").textContent = TOPICS[t].title;
+}
+function render(){
+  clearTimeout(brkTimer);
+  $("brk").hidden = true; $("quiz").hidden = true; $("viewer").hidden = false;
+  drawProgress();
+  paused = false; setPauseLabel();
+  const v = $("vid"), src = TOPICS[t].v;
+  v.hidden = false; $("ph").hidden = true;
+  if (v.dataset.src !== src){ v.src = src; v.dataset.src = src; }
+  v.currentTime = 0;
+  v.play().catch(()=>{});
+  lastSeg = -2; drawCap(true);
+  if (TOPICS[t+1]) preload.src = TOPICS[t+1].v;
+}
+function advance(){
+  $("vid").pause();
+  if (TOPICS[t].ready){ showReady(); return; }
+  if (TOPICS[t].quiz){ showQuiz(); return; }
+  if (t < TOPICS.length-1) topicBreak();
+  else show("end");
+}
+function topicBreak(){
+  $("brkDone").textContent = (["المقدمة","الخاتمة"].includes(TOPICS[t].short) ? "انتهت " : "انتهى ") + TOPICS[t].short;
+  $("brkNext").textContent = `نبدأ الآن ${TOPICS[t+1].title}`;
+  $("cap").hidden = true; $("brk").hidden = false;
+  $("progress").children[t].className = "done";
+  const bar = $("brkBar"); bar.style.transition = "none"; bar.style.width = "0";
+  requestAnimationFrame(() => requestAnimationFrame(() => { bar.style.transition = "width 3000ms linear"; bar.style.width = "100%"; }));
+  brkTimer = setTimeout(() => { t++; render(); }, 3000);
+}
+$("vid").addEventListener("ended", advance);
+
+// "are you ready?" check after the introduction
+function showReady(){
+  $("viewer").hidden = true; $("quiz").hidden = false;
+  $("progress").children[t].className = "done";
+  $("qEyebrow").textContent = "قبل أن نبدأ";
+  $("qText").textContent = "هل أنت جاهز لبدء المحور الأول؟";
+  $("qOpts").innerHTML = ""; $("qFb").hidden = true;
+  $("qActions").innerHTML = `<button class="btn primary" id="readyBtn">يلا نبدأ</button>`;
+  $("readyBtn").onclick = () => { t++; render(); };
+  $("readyBtn").focus();
+}
+// interactive situation at the end of a topic
+function showQuiz(){
+  const qz = TOPICS[t].quiz;
+  $("viewer").hidden = true; $("quiz").hidden = false;
+  $("qEyebrow").textContent = "موقف تفاعلي";
+  $("progress").children[t].className = "done";
+  $("qText").textContent = qz.q;
+  $("qOpts").innerHTML = qz.opts.map((o,k)=>`<button class="opt" data-k="${k}"><b>${o.k}</b><span>${o.t}</span></button>`).join("");
+  $("qFb").hidden = true; $("qActions").innerHTML = "";
+  $("qOpts").querySelector(".opt").focus();
+}
+$("qOpts").addEventListener("click", e => {
+  const b = e.target.closest(".opt"); if (!b || b.disabled) return;
+  const qz = TOPICS[t].quiz, o = qz.opts[+b.dataset.k];
+  const right = qz.opts.findIndex(x => x.r === "ok"), rc = qz.opts[right];
+  const all = [...$("qOpts").children];
+  all.forEach(x => x.disabled = true);
+  all[right].classList.add("ok");
+  if (o.r !== "ok") b.classList.add("wrong");
+  all.forEach((x,k) => { if (k !== right && x !== b) x.classList.add("dim"); });
+  const fb = $("qFb"); fb.hidden = false;
+  if (o.r === "ok"){
+    fb.className = "fb ok";
+    fb.innerHTML = `<strong>صحيح ✓</strong>${o.fb}`;
+  } else {
+    fb.className = "fb wrong";
+    fb.innerHTML = `<strong>خطأ ✗ — الإجابة الصحيحة هي (${rc.k})</strong>${o.fb}<br>${rc.fb}`;
+  }
+  // move on automatically: short pause if correct, longer if wrong (time to read the correction)
+  const last = t === TOPICS.length-1, wait = o.r === "ok" ? 1500 : 6000;
+  $("qActions").innerHTML = `<p class="summary">${qz.summary}</p><div class="cd"><span id="cdBar"></span></div>`;
+  const bar = $("cdBar"); bar.style.transitionDuration = wait + "ms";
+  requestAnimationFrame(() => requestAnimationFrame(() => bar.style.width = "100%"));
+  brkTimer = setTimeout(() => {
+    if (last) { show("end"); return; }
+    $("quiz").hidden = true; $("viewer").hidden = false; topicBreak();
+  }, wait);
+});
+
+// time counter for the whole topic (seconds, one decimal) for marking cut points
+function tick(){
+  const v = $("vid"), seek = $("seek");
+  const d = isFinite(v.duration) ? v.duration : 0;
+  $("tc").textContent = `${TOPICS[t].short} · ${v.currentTime.toFixed(1)} / ${d.toFixed(1)} ث`;
+  seek.max = d || 60;
+  if (!seeking) seek.value = v.currentTime;
+  if ($("brk").hidden) drawCap(false);
+  requestAnimationFrame(tick);
+}
+requestAnimationFrame(tick);
+$("seek").addEventListener("input", e => { seeking = true; $("vid").currentTime = parseFloat(e.target.value); });
+$("seek").addEventListener("change", () => { seeking = false; });
+function step(dt){
+  const v = $("vid");
+  if (!paused){ paused = true; v.pause(); setPauseLabel(); }
+  v.currentTime = Math.max(0, Math.min((v.duration||60) - 0.05, v.currentTime + dt));
+}
+$("stepBack").onclick = () => step(-0.25);
+$("stepFwd").onclick = () => step(0.25);
+
+$("startBtn").onclick = () => { t = 0; show("player"); render(); };
+$("backBtn").onclick = () => {
+  // within the first 2 s of a topic go to the previous topic, otherwise restart this one
+  if ($("vid").currentTime < 2 && t > 0 && $("brk").hidden && $("quiz").hidden) t--;
+  render();
+};
+$("replayBtn").onclick = () => { render(); };
+$("pauseBtn").onclick = () => {
+  if (!$("brk").hidden || $("viewer").hidden) return;
+  const v = $("vid"); paused = !paused; setPauseLabel();
+  paused ? v.pause() : v.play().catch(()=>{});
+};
+// end-of-course learnability questions (display only, nothing is stored)
+const ITEMS = [
+  "تعلّمت كيف أستخدم الدورة بسرعة.",
+  "كان من السهل أن أعرف ما الخطوة التالية في الدورة.",
+  "استطعت استخدام الدورة دون الحاجة إلى مساعدة من أحد.",
+  "كانت أزرار التحكم (الإيقاف، السابق، الترجمة) واضحة وسهلة الاستخدام.",
+  "أستطيع العودة إلى الدورة واستخدامها مرة أخرى دون صعوبة."
+];
+const answers = new Array(ITEMS.length).fill(0);
+function buildSurvey(){
+  answers.fill(0);
+  $("items").innerHTML = ITEMS.map((q,k)=>`<li><p>${q}</p><div class="rate" role="group" aria-label="السؤال ${k+1}" data-q="${k}">${[1,2,3,4,5].map(n=>`<button aria-pressed="false">${n}</button>`).join("")}</div></li>`).join("");
+  $("openQ").value = ""; $("survey").hidden = false; $("thanks").hidden = true;
+  $("sendBtn").disabled = true; $("sendHint").hidden = false;
+}
+$("items").addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return;
+  const g = b.parentElement, k = +g.dataset.q;
+  [...g.children].forEach(x => x.setAttribute("aria-pressed", x===b ? "true":"false"));
+  answers[k] = +b.textContent;
+  const done = answers.every(a => a > 0);
+  $("sendBtn").disabled = !done; $("sendHint").hidden = done;
+});
+$("sendBtn").onclick = () => { $("survey").hidden = true; $("thanks").hidden = false; };
+buildSurvey();
+$("restartBtn").onclick = () => { buildSurvey(); show("welcome"); };
+document.querySelectorAll("[data-cap]").forEach(b => b.onclick = () => {
+  capMode = b.dataset.cap;
+  document.querySelectorAll("[data-cap]").forEach(x => x.setAttribute("aria-pressed", x===b ? "true":"false"));
+  if ($("brk").hidden) drawCap(true);
+});
+
+document.addEventListener("keydown", e => {
+  if ($("player").hidden) return;
+  if (e.key === " " && e.target === document.body) { e.preventDefault(); $("pauseBtn").click(); }
+});
+</script>
+
+</body>
+</html>
